@@ -7,17 +7,25 @@ export default function ProductListScreen({ route, navigation }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Fetching products for category:', category);
+
     fetch(`https://fakestoreapi.com/products/category/${category}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then(data => {
+        console.log('Fetched products:', data);
         setProducts(data);
         setLoading(false);
       })
       .catch(error => {
-        console.error(error);
+        console.error('Error fetching products:', error);
         setLoading(false);
       });
-  }, []);
+  }, [category]);  // Dependency array ensures it re-fetches when category changes
 
   if (loading) {
     return (

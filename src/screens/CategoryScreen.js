@@ -6,16 +6,37 @@ export default function CategoryScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://172.20.10.5:3000/products/categories')
-      .then(res => res.json())
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort(); // Abort the request after 10 seconds
+    }, 10000); // 10 seconds timeout
+
+    console.log('Fetching categories...');
+    
+    fetch('http://10.128.68.43:3000/products/categories', {
+      signal: controller.signal,
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then(data => {
         setCategories(data);
         setLoading(false);
       })
       .catch(error => {
-        console.error(error);
+        if (error.name === 'AbortError') {
+          console.error('Fetch request timed out');
+        } else {
+          console.error('Fetch error:', error);
+        }
         setLoading(false);
       });
+
+    // Cleanup timeout on component unmount
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (loading) {
@@ -26,12 +47,20 @@ export default function CategoryScreen({ navigation }) {
     );
   }
 
+  if (categories.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text>No categories available.</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Choose a Category</Text>
       {categories.map((category, index) => (
-        <TouchableOpacity 
-          key={index} 
+        <TouchableOpacity
+          key={index}
           style={styles.categoryButton}
           onPress={() => navigation.navigate('Products', { category })}
         >
