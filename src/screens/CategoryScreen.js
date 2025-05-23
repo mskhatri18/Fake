@@ -13,7 +13,8 @@ export default function CategoryScreen({ navigation }) {
 
     console.log('Fetching categories...');
     
-    fetch('http://10.128.68.43:3000/products/categories', {
+    fetch('http://172.20.10.2:3000/products/categories', {
+
       signal: controller.signal,
     })
       .then(res => {
